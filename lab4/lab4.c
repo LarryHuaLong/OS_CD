@@ -35,42 +35,39 @@ void *test(void *data)
 	return NULL;
 }
 
-{ //窗口控件指针声明
-	GtkBuilder *builder;
-	GtkWidget *window1;
-	GtkWidget *btn_new_process;
-	GtkWidget *searchentry1;
-	GtkWidget *btn_search;
-	GtkWidget *btn_shutdown;
-	GtkWidget *btn_endprocess;
-	GtkWidget *p_pid;
-	GtkWidget *p_name;
-	GtkWidget *p_state;
-	GtkWidget *p_ppid;
-	GtkWidget *p_priority;
-	GtkWidget *p_nice;
-	GtkWidget *p_memsize;
-	GtkWidget *treeview1;
-	GtkWidget *label_cpu_rate;
-	GtkWidget *label_mem_rate;
-	GtkWidget *label_current_time;
-	GtkWidget *cpu_rate_box;
-	GtkWidget *mem_rate_box;
-	GtkWidget *label_hostname;
-	GtkWidget *label_boot_time;
-	GtkWidget *label_run_time;
-	GtkWidget *label_os_version;
-	GtkWidget *label_cpu_type;
-	GtkWidget *label_cpu_speed;
-}
+//窗口控件指针声明
+GtkWidget *window1;
+GtkWidget *btn_new_process;
+GtkWidget *searchentry1;
+GtkWidget *btn_search;
+GtkWidget *btn_shutdown;
+GtkWidget *btn_endprocess;
+GtkWidget *p_pid;
+GtkWidget *p_name;
+GtkWidget *p_state;
+GtkWidget *p_ppid;
+GtkWidget *p_priority;
+GtkWidget *p_nice;
+GtkWidget *p_memsize;
+GtkWidget *treeview1;
+GtkWidget *label_cpu_rate;
+GtkWidget *label_mem_rate;
+GtkWidget *label_current_time;
+GtkWidget *cpu_rate_box;
+GtkWidget *mem_rate_box;
+GtkWidget *label_hostname;
+GtkWidget *label_boot_time;
+GtkWidget *label_run_time;
+GtkWidget *label_os_version;
+GtkWidget *label_cpu_type;
+GtkWidget *label_cpu_speed;
 
 int main(int argc, char *argv[])
 {
-
 	//1.gtk初始化
 	gtk_init(&argc, &argv);
 	//2.创建GtkBuilder对象，GtkBuilder在<gtk/gtk.h>声明
-	builder = gtk_builder_new();
+	GtkBuilder *builder = gtk_builder_new();
 	//3.读取lab4.glade文件的信息，保存在builder中
 	if (!gtk_builder_add_from_file(builder, "lab4.glade", NULL))
 	{
@@ -102,7 +99,10 @@ int main(int argc, char *argv[])
 	label_os_version = GTK_WIDGET(gtk_builder_get_object(builder, "label_os_version"));
 	label_cpu_type = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_type"));
 	label_cpu_speed = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_speed"));
-	//获取textview的buffer
+	
+
+
+
 	g_thread_new("worker", &test, NULL); //创建写线程
 	gtk_main();
 	return 0;
