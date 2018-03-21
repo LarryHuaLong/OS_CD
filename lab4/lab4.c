@@ -1,7 +1,8 @@
 #include "lab4.h"
 
-void *collect_cpu_rates(void *data); //线程，收集cpu利用率信息
 double cpu_rates[120] = {0.0};
+double mem_rates[120] = {0.0};
+double total_time, idle_time; //uptime信息
 //窗口控件指针声明
 GtkWidget *window1;
 GtkWidget *btn_new_process;
@@ -27,6 +28,7 @@ GtkWidget *label_boot_time;
 GtkWidget *label_run_time;
 GtkWidget *label_os_version;
 GtkWidget *label_cpu_type;
+GtkWidget *label_cpu_num;
 GtkWidget *label_cpu_speed;
 
 int main(int argc, char *argv[])
@@ -62,10 +64,53 @@ int main(int argc, char *argv[])
 	label_run_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_run_time"));
 	label_os_version = GTK_WIDGET(gtk_builder_get_object(builder, "label_os_version"));
 	label_cpu_type = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_type"));
+	label_cpu_num = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_num"));
 	label_cpu_speed = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_speed"));
+
 	label_cpu_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_rate"));
 	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
 	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
+
+	int rs;
+	char hostname[100];
+	size_t len;
+	rs = get_hostname(hostname, &len);
+	if (-1 == rs)
+		printf("get_hostname failed.\n");
+	gtk_label_set_text((GtkLabel *)label_hostname, hostname);
+
+	rs = get_uptime(&total_time, &idle_time);
+	if (-1 == rs)
+		printf("get_uptime failed.\n");
+	time_t boot_time = time(NULL);
+	boot_time -= (time_t)total_time;
+	gtk_label_set_text((GtkLabel *)label_boot_time, ctime(&boot_time));
+
+	char ostype[20];
+	char osrelease[30];
+	rs = get_osinfo(ostype, osrelease);
+	if (-1 == rs)
+		printf("get_osinfo failed.\n");
+	char osversion[50];
+	sprintf(osversion, "%s %s", ostype, osrelease);
+	gtk_label_set_text((GtkLabel *)label_os_version, osversion);
+
+	CPUINFO CPUs[8];
+	int CPUnum = 0;
+	rs = get_CPUinfo(CPUs, &CPUnum);
+	if (-1 == rs)
+		printf("get_CPUinfo failed.\n");
+	gtk_label_set_text((GtkLabel *)label_cpu_type, CPUs[0].type);
+
+	char buf[20];
+	sprintf(buf, "%d", CPUnum);
+	gtk_label_set_text((GtkLabel *)label_cpu_num, buf);
+	double cpuspeed = 0.0;
+	for (int i = 0; i < CPUnum; i++)
+		cpuspeed += CPUs[i].speed;
+	cpuspeed /= CPUnum;
+	sprintf(buf, "%.2lf MHz", cpuspeed);
+	gtk_label_set_text((GtkLabel *)label_cpu_speed, buf);
 
 	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(G_OBJECT(btn_new_process), "clicked", G_CALLBACK(new_process), NULL);
@@ -75,24 +120,71 @@ int main(int argc, char *argv[])
 
 	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	gtk_widget_show_all(window1);
-	g_thread_new("worker", &collect_cpu_rates, NULL); //创建写线程
+	g_thread_new("worker", &collect_rates, NULL); 
 	gtk_main();
 	return 0;
 }
-void *collect_cpu_rates(void *data)
+void *collect_rates(void *data)
 {
 	int total0 = 0;
 	int idle0 = 0;
 	int index = 0;
-	double rate = 0.0;
-	char buf[20];
+	UPDATE_LABELS *ulables;
 	while (1)
 	{
 		sleep(1);
-		if ((-1 == get_cpu_rate(&total0, &idle0, &rate)))
-			rate = 0.0;
-		cpu_rates[index++] = rate;
-		sprintf(buf, "%.2lf%%", rate);
-		gtk_label_set_text((GtkLabel *)label_cpu_rate, buf);
+		ulables = g_new0(UPDATE_LABELS, 1);
+		ulables->cpurate = 0.0;
+		ulables->memrate = 0.0;
+		ulables->swaprate = 0.0;
+		if ((-1 == get_cpu_rate(&total0, &idle0, &(ulables->cpurate))))
+			ulables->cpurate = 0.0;
+		if ((-1 == get_mem_rate(&(ulables->memrate), &(ulables->swaprate))))
+			ulables->memrate = 0.0;
+		cpu_rates[index] = ulables->cpurate;
+		mem_rates[index++] = ulables->memrate;
+		time_t now_time = time(&(ulables->nowtime));
+		gdk_threads_add_timeout(0, update_lables, ulables);
 	}
+}
+void new_process(GtkWidget *widget, gpointer data)
+{
+	printf("new_process is called\n");
+
+	return;
+}
+void search_pid(GtkWidget *widget, gpointer data)
+{
+	printf("search_pid is called\n");
+
+	return;
+}
+void confirm_shutdown(GtkWidget *widget, gpointer data)
+{
+	printf("confirm_shutdown is called\n");
+
+	return;
+}
+void confirm_kill(GtkWidget *widget, gpointer data)
+{
+	printf("confirm_kill is called\n");
+
+	return;
+}
+
+gboolean update_lables(gpointer pdata)
+{
+	char buf[50];
+	UPDATE_LABELS *ulables = pdata;
+	sprintf(buf, "%.2lf%%", ulables->cpurate);
+	gtk_label_set_text((GtkLabel *)label_cpu_rate, buf);
+	sprintf(buf, "%.2lf%%", ulables->memrate);
+	gtk_label_set_text((GtkLabel *)label_mem_rate, buf);
+	//sprintf(buf, "%.2lf%%", ulables->swaprate);
+	//gtk_label_set_text((GtkLabel *)label_swap_rate, buf);
+	gtk_label_set_text((GtkLabel *)label_current_time, ctime(&(ulables->nowtime)));
+	time_t runtime = ulables->nowtime - (time_t)total_time;
+	gtk_label_set_text((GtkLabel *)label_run_time, ctime(&runtime));
+	g_free(ulables);
+	return FALSE;
 }

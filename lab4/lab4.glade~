@@ -487,8 +487,6 @@
             </child>
             <child>
               <object class="GtkGrid" id="grid1">
-                <property name="width_request">100</property>
-                <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">center</property>
@@ -513,7 +511,7 @@
                     <property name="name">label_hostname</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">hostname</property>
                     <property name="selectable">True</property>
@@ -576,24 +574,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="label3">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">end</property>
-                    <property name="valign">end</property>
-                    <property name="label" translatable="yes">主频：</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">5</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkLabel" id="label_boot_time">
                     <property name="name">label_boot_time</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">boot_time</property>
                     <property name="selectable">True</property>
@@ -609,7 +594,7 @@
                     <property name="name">label_run_time</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">run_time</property>
                     <property name="selectable">True</property>
@@ -625,7 +610,7 @@
                     <property name="name">label_os_version</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">os_version</property>
                     <property name="selectable">True</property>
@@ -641,7 +626,7 @@
                     <property name="name">label_cpu_type</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">cpu_type</property>
                     <property name="selectable">True</property>
@@ -653,12 +638,56 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkLabel" id="label14">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="valign">end</property>
+                    <property name="label" translatable="yes">CPU核数：</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="valign">end</property>
+                    <property name="label" translatable="yes">主频：</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">6</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkLabel" id="label_cpu_speed">
                     <property name="name">label_cpu_speed</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">start</property>
+                    <property name="halign">center</property>
                     <property name="valign">center</property>
+                    <property name="margin_bottom">2</property>
+                    <property name="label" translatable="yes">cpu_speed</property>
+                    <property name="selectable">True</property>
+                    <property name="ellipsize">start</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label_cpu_num">
+                    <property name="name">label_cpu_num</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="margin_bottom">2</property>
                     <property name="label" translatable="yes">cpu_speed</property>
                     <property name="selectable">True</property>
                     <property name="ellipsize">start</property>
@@ -686,10 +715,9 @@
             </child>
             <child>
               <object class="GtkGrid" id="grid2">
-                <property name="width_request">100</property>
-                <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="row_spacing">1</property>
                 <property name="column_spacing">1</property>

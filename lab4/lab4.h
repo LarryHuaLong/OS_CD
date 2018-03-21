@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
@@ -130,7 +131,7 @@ int get_CPUinfo(CPUINFO *CPUs, int *CPUnum)
 		if ((ptr = strstr(line, "model name")))
 		{
 			ptr = strstr(line, ":");
-			strcpy(CPUs[count].type, ptr + 1);
+			sscanf(ptr + 1,"%[^\n]",CPUs[count].type);
 			continue;
 		}
 		if ((ptr = strstr(line, "cpu MHz")))
@@ -143,6 +144,7 @@ int get_CPUinfo(CPUINFO *CPUs, int *CPUnum)
 	}
 	free(line);
 	fclose(fin);
+	*CPUnum = count;
 	for (int i = 0; i < count; i++)
 		printf("CPU%d:%s%.3lf MHz\n", i, CPUs[i].type, CPUs[i].speed);
 	return 0;
@@ -278,7 +280,7 @@ int get_cpu_rate(int *total0, int *idle0, double *cpu_rate)
 	printf("CPU rate:%.2lf%%\n", rate);
 	return 0;
 }
-double get_mem_rate(double *mem_rate, double *swap_rate)
+int get_mem_rate(double *mem_rate, double *swap_rate)
 {
 	if (mem_rate == NULL)
 	{
@@ -347,27 +349,17 @@ double get_mem_rate(double *mem_rate, double *swap_rate)
 	return 0;
 }
 
-void new_process(GtkWidget *widget, gpointer data)
-{
-	printf("new_process is called\n");
+void *collect_rates(void *data); //线程，收集cpu利用率和内存使用率
+void new_process(GtkWidget *widget, gpointer data);
+void search_pid(GtkWidget *widget, gpointer data);
+void confirm_shutdown(GtkWidget *widget, gpointer data);
+void confirm_kill(GtkWidget *widget, gpointer data);
+typedef struct UPDATE_LABELS{
+	double cpurate;
+	double memrate;
+	double swaprate;
+	time_t nowtime;
+}UPDATE_LABELS;
+gboolean update_lables(gpointer pdata);
 
-	return;
-}
-void search_pid(GtkWidget *widget, gpointer data)
-{
-	printf("search_pid is called\n");
-	
-	return;
-}
-void confirm_shutdown(GtkWidget *widget, gpointer data)
-{
-	printf("confirm_shutdown is called\n");
-	
-	return;
-}
-void confirm_kill(GtkWidget *widget, gpointer data)
-{
-	printf("confirm_kill is called\n");
-	
-	return;
-}
+
