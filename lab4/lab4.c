@@ -2,7 +2,8 @@
 
 double cpu_rates[120] = {0.0};
 double mem_rates[120] = {0.0};
-double total_time, idle_time; //uptime信息
+time_t boot_time; //系统启动时间
+
 //窗口控件指针声明
 GtkWidget *window1;
 GtkWidget *btn_new_process;
@@ -78,13 +79,15 @@ int main(int argc, char *argv[])
 	if (-1 == rs)
 		printf("get_hostname failed.\n");
 	gtk_label_set_text((GtkLabel *)label_hostname, hostname);
-
+	double total_time, idle_time; //uptime信息
 	rs = get_uptime(&total_time, &idle_time);
 	if (-1 == rs)
 		printf("get_uptime failed.\n");
-	time_t boot_time = time(NULL);
-	boot_time -= (time_t)total_time;
-	gtk_label_set_text((GtkLabel *)label_boot_time, ctime(&boot_time));
+	boot_time = time(NULL) - (time_t)total_time;
+	struct tm *run_tm = localtime(&boot_time);
+	char buf[20];
+	sprintf(buf, "%d:%d:%d", run_tm->tm_hour, run_tm->tm_min, run_tm->tm_sec);
+	gtk_label_set_text((GtkLabel *)label_boot_time, buf);
 
 	char ostype[20];
 	char osrelease[30];
@@ -102,7 +105,6 @@ int main(int argc, char *argv[])
 		printf("get_CPUinfo failed.\n");
 	gtk_label_set_text((GtkLabel *)label_cpu_type, CPUs[0].type);
 
-	char buf[20];
 	sprintf(buf, "%d", CPUnum);
 	gtk_label_set_text((GtkLabel *)label_cpu_num, buf);
 	double cpuspeed = 0.0;
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
 
 	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	gtk_widget_show_all(window1);
-	g_thread_new("worker", &collect_rates, NULL); 
+	g_thread_new("worker", &collect_rates, NULL);
 	gtk_main();
 	return 0;
 }
@@ -182,9 +184,13 @@ gboolean update_lables(gpointer pdata)
 	gtk_label_set_text((GtkLabel *)label_mem_rate, buf);
 	//sprintf(buf, "%.2lf%%", ulables->swaprate);
 	//gtk_label_set_text((GtkLabel *)label_swap_rate, buf);
-	gtk_label_set_text((GtkLabel *)label_current_time, ctime(&(ulables->nowtime)));
-	time_t runtime = ulables->nowtime - (time_t)total_time;
-	gtk_label_set_text((GtkLabel *)label_run_time, ctime(&runtime));
+	struct tm *now_tm = localtime(&(ulables->nowtime));
+	sprintf(buf, "%d:%d:%d", now_tm->tm_hour, now_tm->tm_min, now_tm->tm_sec);
+	gtk_label_set_text((GtkLabel *)label_current_time, buf);
+	time_t runtime = ulables->nowtime - boot_time;
+	struct tm *run_tm = localtime(&runtime);
+	sprintf(buf, "%d:%d:%d", run_tm->tm_hour, run_tm->tm_min, run_tm->tm_sec);
+	gtk_label_set_text((GtkLabel *)label_run_time, buf);
 	g_free(ulables);
 	return FALSE;
 }
