@@ -306,9 +306,6 @@ double get_mem_rate(double *mem_rate,double *swap_rate)
 	printf("mem:%.2lf%%,swap:%.2lf%%\n",*mem_rate,*swap_rate);
 	return 0;
 }
-long get_time(){
-	return 0;
-}
 
 
 
