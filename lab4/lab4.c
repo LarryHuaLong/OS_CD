@@ -1,40 +1,7 @@
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
 #include "lab4.h"
 
-typedef struct tictack
-{
-	int times_count;
-	int num;
-} TICTACK;
-
-static int t = 0;
-static int i = 0;
-gboolean fun1(gpointer pdata)
-{
-	TICTACK *tic = pdata;
-	printf("%d:fun1:%d\n", tic->times_count, tic->num);
-	g_free(tic);
-	return FALSE;
-}
-
-void *test(void *data)
-{
-
-	TICTACK *tic;
-	while (i < 10)
-	{
-		tic = g_new0(TICTACK, 1);
-		tic->times_count = t;
-		tic->num = i;
-		gdk_threads_add_timeout(0, fun1, tic);
-
-		printf("%d,%d\n", t++, i++);
-	}
-	printf("test done.");
-	return NULL;
-}
-
+void *collect_cpu_rates(void *data); //线程，收集cpu利用率信息
+double cpu_rates[120] = {0.0};
 //窗口控件指针声明
 GtkWidget *window1;
 GtkWidget *btn_new_process;
@@ -88,9 +55,6 @@ int main(int argc, char *argv[])
 	p_nice = GTK_WIDGET(gtk_builder_get_object(builder, "p_nice"));
 	p_memsize = GTK_WIDGET(gtk_builder_get_object(builder, "p_memsize"));
 	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
-	label_cpu_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_rate"));
-	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
-	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
 	cpu_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "cpu_rate_box"));
 	mem_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "mem_rate_box"));
 	label_hostname = GTK_WIDGET(gtk_builder_get_object(builder, "label_hostname"));
@@ -99,11 +63,36 @@ int main(int argc, char *argv[])
 	label_os_version = GTK_WIDGET(gtk_builder_get_object(builder, "label_os_version"));
 	label_cpu_type = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_type"));
 	label_cpu_speed = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_speed"));
-	
+	label_cpu_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_rate"));
+	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
+	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
 
+	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(G_OBJECT(btn_new_process), "clicked", G_CALLBACK(new_process), NULL);
+	g_signal_connect(G_OBJECT(btn_search), "clicked", G_CALLBACK(search_pid), NULL);
+	g_signal_connect(G_OBJECT(btn_shutdown), "clicked", G_CALLBACK(confirm_shutdown), NULL);
+	g_signal_connect(G_OBJECT(btn_endprocess), "clicked", G_CALLBACK(confirm_kill), NULL);
 
-
-	g_thread_new("worker", &test, NULL); //创建写线程
+	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
+	gtk_widget_show_all(window1);
+	g_thread_new("worker", &collect_cpu_rates, NULL); //创建写线程
 	gtk_main();
 	return 0;
+}
+void *collect_cpu_rates(void *data)
+{
+	int total0 = 0;
+	int idle0 = 0;
+	int index = 0;
+	double rate = 0.0;
+	char buf[20];
+	while (1)
+	{
+		sleep(1);
+		if ((-1 == get_cpu_rate(&total0, &idle0, &rate)))
+			rate = 0.0;
+		cpu_rates[index++] = rate;
+		sprintf(buf, "%.2lf%%", rate);
+		gtk_label_set_text((GtkLabel *)label_cpu_rate, buf);
+	}
 }

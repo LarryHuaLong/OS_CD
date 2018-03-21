@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
 
 int get_hostname(char *hostname, size_t *plen)
 {
@@ -251,30 +253,30 @@ int get_CPU_stat(int *p_total, int *p_idle)
 	fclose(fin);
 	return 0;
 }
-double get_cpu_rate(double *cpu_rate)
+int get_cpu_rate(int *total0, int *idle0, double *cpu_rate)
 {
 	if (cpu_rate == NULL)
 	{
 		printf("error:cpu_rate(NULL)\n");
 		return -1;
 	}
-	int total1, total2;
-	int idle1, idle2;
+	int total1;
+	int idle1;
 	double total_d, idle_d, rate;
 	int rs = get_CPU_stat(&total1, &idle1);
-	if (-1 == rs)
+	if (-1 == rs){
 		printf("get_CPU_stat failed.\n");
-	sleep(1);
-	rs = get_CPU_stat(&total2, &idle2);
-	if (-1 == rs)
-		printf("get_CPU_stat failed.\n");
-	total_d = total2 - total1;
-	idle_d = idle2 - idle1;
+		return -1;
+	}
+	total_d = total1 - *total0;
+	idle_d = idle1 - *idle0;
 	if (total_d)
 		rate = 100.0 * (1.0 - idle_d / total_d);
 	*cpu_rate = rate;
+	*total0 = total1;
+	*idle0 = idle1;
 	printf("CPU rate:%.2lf%%\n", rate);
-	return rate;
+	return 0;
 }
 double get_mem_rate(double *mem_rate, double *swap_rate)
 {
@@ -343,4 +345,29 @@ double get_mem_rate(double *mem_rate, double *swap_rate)
 		*swap_rate = 0.0;
 	printf("mem:%.2lf%%,swap:%.2lf%%\n", *mem_rate, *swap_rate);
 	return 0;
+}
+
+void new_process(GtkWidget *widget, gpointer data)
+{
+	printf("new_process is called\n");
+
+	return;
+}
+void search_pid(GtkWidget *widget, gpointer data)
+{
+	printf("search_pid is called\n");
+	
+	return;
+}
+void confirm_shutdown(GtkWidget *widget, gpointer data)
+{
+	printf("confirm_shutdown is called\n");
+	
+	return;
+}
+void confirm_kill(GtkWidget *widget, gpointer data)
+{
+	printf("confirm_kill is called\n");
+	
+	return;
 }
