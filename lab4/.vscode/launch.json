@@ -22,7 +22,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build lab4"        
+            "preLaunchTask": "build_lab4"        
         }
     ]
 }

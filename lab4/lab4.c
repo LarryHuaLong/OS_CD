@@ -1,72 +1,109 @@
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include "lab4.h"
 
-void test_get_hostname()
-{	
-	char hostname[100];
-	size_t len;
-	int rs = get_hostname(hostname,&len);
-	if(-1 == rs)
-		printf("get_hostname failed.\n");
-}
-void test_get_uptime()
-{	
-	double total_time,free_time;
-
-	int rs = get_uptime(&total_time,&free_time);
-	if(-1 == rs)
-		printf("get_uptime failed.\n");
-}
-void test_get_osinfo()
-{	
-	char ostype[20];
-	char osrelease[30];
-
-	int rs = get_osinfo(ostype,osrelease);
-	if(-1 == rs)
-		printf("get_osinfo failed.\n");
-}
-void test_get_cpuinfo()
-{	
-	CPUINFO CPUs[8];
-	int CPUnum = 0;
-	int rs = get_CPUinfo(CPUs,&CPUnum);
-	if(-1 == rs)
-		printf("get_CPUinfo failed.\n");
-}
-void test_get_info_pid()
-{	
-	PIDINFO pidinfo;
-	int pid = 1;
-	int rs = get_info_pid(&pidinfo,pid);
-	if(-1 == rs)
-		printf("get_CPUinfo failed.\n");
-}
-void test_get_all_pids()
-{	
-	int pids[1000];
-	int pidnum = 0;
-	int rs = get_all_pids(pids,&pidnum);
-	if(-1 == rs)
-		printf("get_all_pid failed.\n");
-}
-
-
-int main( int argc, char *argv[] )
+typedef struct tictack
 {
-	
-    test_get_hostname();
-	test_get_uptime();
-    test_get_osinfo();
-    test_get_cpuinfo();
-    test_get_info_pid();
-    test_get_all_pids();
-    double cpu_rate;
-    get_cpu_rate(&cpu_rate);
-    double mem_rate,swap_rate;
-    get_mem_rate(&mem_rate,&swap_rate);
+	int times_count;
+	int num;
+} TICTACK;
 
-    return 0;
+static int t = 0;
+static int i = 0;
+gboolean fun1(gpointer pdata)
+{
+	TICTACK *tic = pdata;
+	printf("%d:fun1:%d\n", tic->times_count, tic->num);
+	g_free(tic);
+	return FALSE;
 }
 
+void *test(void *data)
+{
 
+	TICTACK *tic;
+	while (i < 10)
+	{
+		tic = g_new0(TICTACK, 1);
+		tic->times_count = t;
+		tic->num = i;
+		gdk_threads_add_timeout(0, fun1, tic);
 
+		printf("%d,%d\n", t++, i++);
+	}
+	printf("test done.");
+	return NULL;
+}
+
+{ //窗口控件指针声明
+	GtkBuilder *builder;
+	GtkWidget *window1;
+	GtkWidget *btn_new_process;
+	GtkWidget *searchentry1;
+	GtkWidget *btn_search;
+	GtkWidget *btn_shutdown;
+	GtkWidget *btn_endprocess;
+	GtkWidget *p_pid;
+	GtkWidget *p_name;
+	GtkWidget *p_state;
+	GtkWidget *p_ppid;
+	GtkWidget *p_priority;
+	GtkWidget *p_nice;
+	GtkWidget *p_memsize;
+	GtkWidget *treeview1;
+	GtkWidget *label_cpu_rate;
+	GtkWidget *label_mem_rate;
+	GtkWidget *label_current_time;
+	GtkWidget *cpu_rate_box;
+	GtkWidget *mem_rate_box;
+	GtkWidget *label_hostname;
+	GtkWidget *label_boot_time;
+	GtkWidget *label_run_time;
+	GtkWidget *label_os_version;
+	GtkWidget *label_cpu_type;
+	GtkWidget *label_cpu_speed;
+}
+
+int main(int argc, char *argv[])
+{
+
+	//1.gtk初始化
+	gtk_init(&argc, &argv);
+	//2.创建GtkBuilder对象，GtkBuilder在<gtk/gtk.h>声明
+	builder = gtk_builder_new();
+	//3.读取lab4.glade文件的信息，保存在builder中
+	if (!gtk_builder_add_from_file(builder, "lab4.glade", NULL))
+	{
+		printf("connot load file!");
+	}
+	//4.获取控件指针
+	window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
+	btn_new_process = GTK_WIDGET(gtk_builder_get_object(builder, "btn_new_process"));
+	searchentry1 = GTK_WIDGET(gtk_builder_get_object(builder, "searchentry1"));
+	btn_search = GTK_WIDGET(gtk_builder_get_object(builder, "btn_search"));
+	btn_shutdown = GTK_WIDGET(gtk_builder_get_object(builder, "btn_shutdown"));
+	btn_endprocess = GTK_WIDGET(gtk_builder_get_object(builder, "btn_endprocess"));
+	p_pid = GTK_WIDGET(gtk_builder_get_object(builder, "p_pid"));
+	p_name = GTK_WIDGET(gtk_builder_get_object(builder, "p_name"));
+	p_state = GTK_WIDGET(gtk_builder_get_object(builder, "p_state"));
+	p_ppid = GTK_WIDGET(gtk_builder_get_object(builder, "p_ppid"));
+	p_priority = GTK_WIDGET(gtk_builder_get_object(builder, "p_priority"));
+	p_nice = GTK_WIDGET(gtk_builder_get_object(builder, "p_nice"));
+	p_memsize = GTK_WIDGET(gtk_builder_get_object(builder, "p_memsize"));
+	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
+	label_cpu_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_rate"));
+	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
+	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
+	cpu_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "cpu_rate_box"));
+	mem_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "mem_rate_box"));
+	label_hostname = GTK_WIDGET(gtk_builder_get_object(builder, "label_hostname"));
+	label_boot_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_boot_time"));
+	label_run_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_run_time"));
+	label_os_version = GTK_WIDGET(gtk_builder_get_object(builder, "label_os_version"));
+	label_cpu_type = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_type"));
+	label_cpu_speed = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_speed"));
+	//获取textview的buffer
+	g_thread_new("worker", &test, NULL); //创建写线程
+	gtk_main();
+	return 0;
+}

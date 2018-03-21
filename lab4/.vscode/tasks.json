@@ -4,11 +4,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build lab4",
+            "label": "buildlab4",
             "type": "shell",
             "command": "gcc",
             "args": [
-                "-g", "-pthread","lab4.c", "-o", "lab4.o"
+                "-g", "-pthread","lab4.c", "-o", "lab4.o",
+                "`pkg-config --cflags --libs gtk+-3.0`"
             ],
             "group": {
                 "kind": "build",
