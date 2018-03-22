@@ -2,36 +2,6 @@
 <!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
-  <object class="GtkListStore" id="liststore1">
-    <columns>
-      <!-- column-name name -->
-      <column type="gchararray"/>
-      <!-- column-name pid -->
-      <column type="gint"/>
-      <!-- column-name ppid -->
-      <column type="gint"/>
-      <!-- column-name memsize -->
-      <column type="gint"/>
-      <!-- column-name priority -->
-      <column type="gint"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Process1</col>
-        <col id="1">1</col>
-        <col id="2">0</col>
-        <col id="3">123123</col>
-        <col id="4">12</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">process2</col>
-        <col id="1">4</col>
-        <col id="2">0</col>
-        <col id="3">24234</col>
-        <col id="4">23</col>
-      </row>
-    </data>
-  </object>
   <object class="GtkWindow" id="window1">
     <property name="name">window1</property>
     <property name="width_request">550</property>
@@ -400,7 +370,6 @@
                         <property name="can_focus">True</property>
                         <property name="hscroll_policy">natural</property>
                         <property name="vscroll_policy">natural</property>
-                        <property name="model">liststore1</property>
                         <property name="headers_clickable">False</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">1</property>

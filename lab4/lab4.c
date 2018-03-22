@@ -74,9 +74,14 @@ int main(int argc, char *argv[])
 	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
 	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
 	//scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
-	liststore1 = GTK_WIDGET(gtk_builder_get_object(builder, "liststore1"));
+	//liststore1 = GTK_WIDGET(gtk_builder_get_object(builder, "liststore1"));
 	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
-	//liststore1 = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
+	GtkTreeViewColumn *column_name = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_name"));
+	GtkTreeViewColumn *column_pid = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_pid"));
+	GtkTreeViewColumn *column_ppid = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_ppid"));
+	GtkTreeViewColumn *column_memsize = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_memsize"));
+	GtkTreeViewColumn *column_priority = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_priority"));
+	liststore1 = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
 	gtk_list_store_append(liststore1, &list_iter);
 	gtk_list_store_set(liststore1, &list_iter,
 					   COLUMN_NAME, "P1",
@@ -84,31 +89,23 @@ int main(int argc, char *argv[])
 					   COLUMU_PPID, 0,
 					   COLUMU_MEMSIZE, 123123,
 					   COLUMU_PRIORITY, 20, -1);
-	//treeview1 = gtk_tree_view_new_with_model(GTK_TREE_MODEL(liststore1));
+	//gtk_list_store_append(liststore1, &list_iter);
+	//gtk_list_store_set(liststore1, &list_iter,
+	//				   COLUMN_NAME, "P1",
+	//				   COLUMN_PID, 13,
+	//				   COLUMU_PPID, 0,
+	//				   COLUMU_MEMSIZE, 1123,
+	//				   COLUMU_PRIORITY, 10, -1);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview1),GTK_TREE_MODEL(liststore1));
 	renderer = gtk_cell_renderer_text_new();
+	printf("%p,%p,%p,%p,%p\n",column_name,column_pid,column_ppid,column_memsize,column_priority);
+	gtk_tree_view_column_add_attribute((column_name),renderer, "text", COLUMN_NAME);
+	gtk_tree_view_column_add_attribute((column_pid),renderer, "text", COLUMN_PID);
+	gtk_tree_view_column_add_attribute((column_ppid),renderer, "text", COLUMU_PPID);
+	gtk_tree_view_column_add_attribute((column_memsize),renderer, "text", COLUMU_MEMSIZE);
+	gtk_tree_view_column_add_attribute((column_priority),renderer, "text", COLUMU_PRIORITY);
 
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
-												COLUMN_NAME,
-												"进程名", renderer,
-												NULL);
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
-												COLUMN_PID,
-												"Pid", renderer,
-												NULL);
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
-												COLUMU_PPID,
-												"PPid", renderer,
-												NULL);
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
-												COLUMU_MEMSIZE,
-												"占用内存", renderer,
-												NULL);
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
-												COLUMU_PRIORITY,
-												"优先级", renderer,
-												NULL);
-
-	gtk_container_add(GTK_CONTAINER(scrolledwindow1), treeview1);
+	//gtk_container_add(GTK_CONTAINER(scrolledwindow1), treeview1);
 	//gtk_widget_show_all(scrolledwindow1);
 	int rs;
 	char hostname[100];
@@ -215,7 +212,7 @@ void confirm_kill(GtkWidget *widget, gpointer data)
 
 gboolean update_lables(gpointer pdata)
 {
-	char buf[50];
+	char buf[100];
 	UPDATE_LABELS *ulables = pdata;
 	sprintf(buf, "%.2lf%%", ulables->cpurate);
 	gtk_label_set_text((GtkLabel *)label_cpu_rate, buf);
