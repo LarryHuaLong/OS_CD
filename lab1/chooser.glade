@@ -59,11 +59,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="entry1">
+              <object class="GtkEntry" id="savefilename">
                 <property name="name">savefilename</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="placeholder_text" translatable="yes">在这里输入要保存的文件名</property>
+                <property name="placeholder_text" translatable="yes">Untitled</property>
               </object>
               <packing>
                 <property name="resize">True</property>
