@@ -18,7 +18,6 @@ GtkWidget *p_ppid;
 GtkWidget *p_priority;
 GtkWidget *p_nice;
 GtkWidget *p_memsize;
-GtkWidget *treeview1;
 GtkWidget *label_cpu_rate;
 GtkWidget *label_mem_rate;
 GtkWidget *label_current_time;
@@ -31,6 +30,11 @@ GtkWidget *label_os_version;
 GtkWidget *label_cpu_type;
 GtkWidget *label_cpu_num;
 GtkWidget *label_cpu_speed;
+GtkWidget *scrolledwindow1;
+GtkWidget *treeview1;
+GtkListStore *liststore1;
+GtkTreeIter list_iter;
+GtkCellRenderer *renderer;
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +61,6 @@ int main(int argc, char *argv[])
 	p_priority = GTK_WIDGET(gtk_builder_get_object(builder, "p_priority"));
 	p_nice = GTK_WIDGET(gtk_builder_get_object(builder, "p_nice"));
 	p_memsize = GTK_WIDGET(gtk_builder_get_object(builder, "p_memsize"));
-	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
 	cpu_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "cpu_rate_box"));
 	mem_rate_box = GTK_WIDGET(gtk_builder_get_object(builder, "mem_rate_box"));
 	label_hostname = GTK_WIDGET(gtk_builder_get_object(builder, "label_hostname"));
@@ -67,11 +70,46 @@ int main(int argc, char *argv[])
 	label_cpu_type = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_type"));
 	label_cpu_num = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_num"));
 	label_cpu_speed = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_speed"));
-
 	label_cpu_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_cpu_rate"));
 	label_mem_rate = GTK_WIDGET(gtk_builder_get_object(builder, "label_mem_rate"));
 	label_current_time = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_time"));
+	//scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
+	liststore1 = GTK_WIDGET(gtk_builder_get_object(builder, "liststore1"));
+	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
+	//liststore1 = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
+	gtk_list_store_append(liststore1, &list_iter);
+	gtk_list_store_set(liststore1, &list_iter,
+					   COLUMN_NAME, "P1",
+					   COLUMN_PID, 1,
+					   COLUMU_PPID, 0,
+					   COLUMU_MEMSIZE, 123123,
+					   COLUMU_PRIORITY, 20, -1);
+	//treeview1 = gtk_tree_view_new_with_model(GTK_TREE_MODEL(liststore1));
+	renderer = gtk_cell_renderer_text_new();
 
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
+												COLUMN_NAME,
+												"进程名", renderer,
+												NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
+												COLUMN_PID,
+												"Pid", renderer,
+												NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
+												COLUMU_PPID,
+												"PPid", renderer,
+												NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
+												COLUMU_MEMSIZE,
+												"占用内存", renderer,
+												NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview1),
+												COLUMU_PRIORITY,
+												"优先级", renderer,
+												NULL);
+
+	gtk_container_add(GTK_CONTAINER(scrolledwindow1), treeview1);
+	//gtk_widget_show_all(scrolledwindow1);
 	int rs;
 	char hostname[100];
 	size_t len;
@@ -120,10 +158,11 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(btn_shutdown), "clicked", G_CALLBACK(confirm_shutdown), NULL);
 	g_signal_connect(G_OBJECT(btn_endprocess), "clicked", G_CALLBACK(confirm_kill), NULL);
 
-	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	gtk_widget_show_all(window1);
+
 	g_thread_new("worker", &collect_rates, NULL);
 	gtk_main();
+	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	return 0;
 }
 void *collect_rates(void *data)

@@ -362,4 +362,11 @@ typedef struct UPDATE_LABELS{
 }UPDATE_LABELS;
 gboolean update_lables(gpointer pdata);
 
-
+enum{  
+    COLUMN_NAME,  
+    COLUMN_PID,  
+    COLUMU_PPID, 
+	COLUMU_MEMSIZE,
+	COLUMU_PRIORITY, 
+    N_COLUMNS  
+};
