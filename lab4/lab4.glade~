@@ -403,7 +403,7 @@
                 <property name="label" translatable="yes">进程信息</property>
               </object>
               <packing>
-                <property name="tab_fill">False</property>
+                <property name="tab_expand">True</property>
               </packing>
             </child>
             <child>
@@ -482,7 +482,7 @@
               </object>
               <packing>
                 <property name="position">1</property>
-                <property name="tab_fill">False</property>
+                <property name="tab_expand">True</property>
               </packing>
             </child>
             <child>
@@ -490,9 +490,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">center</property>
-                <property name="row_spacing">1</property>
+                <property name="row_spacing">5</property>
                 <property name="column_spacing">1</property>
-                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="GtkLabel" id="label_hostname1">
                     <property name="name">label_hostname</property>
@@ -511,11 +511,10 @@
                     <property name="name">label_hostname</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">hostname</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -578,11 +577,10 @@
                     <property name="name">label_boot_time</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">boot_time</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -594,11 +592,10 @@
                     <property name="name">label_run_time</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">run_time</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -610,11 +607,10 @@
                     <property name="name">label_os_version</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">os_version</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -626,11 +622,10 @@
                     <property name="name">label_cpu_type</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">cpu_type</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -668,12 +663,11 @@
                     <property name="name">label_cpu_speed</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="margin_bottom">2</property>
                     <property name="label" translatable="yes">cpu_speed</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -685,12 +679,11 @@
                     <property name="name">label_cpu_num</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">start</property>
                     <property name="valign">center</property>
                     <property name="margin_bottom">2</property>
-                    <property name="label" translatable="yes">cpu_speed</property>
+                    <property name="label" translatable="yes">cpu_num</property>
                     <property name="selectable">True</property>
-                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -700,6 +693,7 @@
               </object>
               <packing>
                 <property name="position">2</property>
+                <property name="tab_expand">True</property>
               </packing>
             </child>
             <child type="tab">
@@ -710,7 +704,7 @@
               </object>
               <packing>
                 <property name="position">2</property>
-                <property name="tab_fill">False</property>
+                <property name="tab_expand">True</property>
               </packing>
             </child>
             <child>
@@ -821,7 +815,7 @@
               </object>
               <packing>
                 <property name="position">3</property>
-                <property name="tab_fill">False</property>
+                <property name="tab_expand">True</property>
               </packing>
             </child>
           </object>

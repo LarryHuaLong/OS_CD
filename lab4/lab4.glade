@@ -404,6 +404,7 @@
               </object>
               <packing>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -483,13 +484,13 @@
               <packing>
                 <property name="position">1</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
               <object class="GtkGrid" id="grid1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
                 <property name="valign">center</property>
                 <property name="row_spacing">5</property>
                 <property name="column_spacing">1</property>
@@ -706,6 +707,7 @@
               <packing>
                 <property name="position">2</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
@@ -817,6 +819,7 @@
               <packing>
                 <property name="position">3</property>
                 <property name="tab_expand">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
           </object>
