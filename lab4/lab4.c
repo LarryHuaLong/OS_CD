@@ -164,7 +164,7 @@ void search_pid(GtkWidget *widget, gpointer data)
 void confirm_shutdown(GtkWidget *widget, gpointer data)
 {
 	printf("confirm_shutdown is called\n");
-	system("poweroff\n");
+	//system("poweroff\n");
 	return;
 }
 void confirm_kill(GtkWidget *widget, gpointer data)

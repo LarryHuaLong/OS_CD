@@ -32,7 +32,7 @@ BUFFER *bufs;
 sem_t *full,*empty,*s1,*s2;
 char *s_name,*d_name;
 pid_t pid1 = -1,pid2 = -1;
-
+long filesize = 0;
 key_t shm_key = (key_t)14477;					//申请共享内存用的键值
 //窗口控件指针
 	GtkBuilder *builder;
@@ -95,41 +95,13 @@ int main(int argc,char *argv[]){
 		progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
 		//获取textview的buffer
 		buffer_read = gtk_text_view_get_buffer((GtkTextView*)textview1);
-		
-		//定义一个信号
-		guint sig_update_read = g_signal_new ("updateread",
-												  G_TYPE_OBJECT,
-												  G_SIGNAL_RUN_FIRST,
-												  0,
-												  NULL,
-												  NULL,
-												  g_cclosure_marshal_VOID__VOID ,
-												  G_TYPE_NONE,
-												  1,
-												  G_TYPE_STRING);
-	  	guint sig_read_progress = g_signal_new ("setreadprogress",
-												  G_TYPE_OBJECT,
-												  G_SIGNAL_RUN_FIRST,
-												  0,
-												  NULL,
-												  NULL,
-												  g_cclosure_marshal_VOID__VOID ,
-												  G_TYPE_NONE,
-												  1,
-												  G_TYPE_DOUBLE);
-		g_signal_connect(G_OBJECT(window2), "updateread",G_CALLBACK(update_read_buffer),NULL);
-		g_signal_connect(G_OBJECT(window2), "setreadprogress",G_CALLBACK(set_read_progress), NULL);
 		g_signal_connect(G_OBJECT(window2), "destroy",G_CALLBACK(gtk_main_quit), NULL);
 	
 		g_object_unref(G_OBJECT(builder));//释放GtkBuilder对象
 		
-		pthread_t p1;
-		pthread_create(&p1,NULL,&read_thread,window2);		//创建读线程
-		
+		gtk_widget_show_all(window2);
+		g_thread_new("reader", &read_thread, NULL);//创建读线程
     	gtk_main ();  
-    	
-		//pthread_join(p1,NULL);						//等待读线程结束
-		
 		printf ("read process exited\n");
 		return 0;
 	}
@@ -152,39 +124,11 @@ int main(int argc,char *argv[]){
 		//获取textview的buffer
 		buffer_write = gtk_text_view_get_buffer((GtkTextView*)textview2);
 		//定义一个信号
-		guint sig_update_write = g_signal_new ("updatewrite",
-												  G_TYPE_OBJECT,
-												  G_SIGNAL_RUN_FIRST,
-												  0,
-												  NULL,
-												  NULL,
-												  g_cclosure_marshal_VOID__VOID ,
-												  G_TYPE_NONE,
-												  1,
-												  G_TYPE_STRING);
-		guint sig_write_progress = g_signal_new ("setwriteprogress",
-												  G_TYPE_OBJECT,
-												  G_SIGNAL_RUN_FIRST,
-												  0,
-												  NULL,
-												  NULL,
-												  g_cclosure_marshal_VOID__VOID ,
-												  G_TYPE_NONE,
-												  1,
-												  G_TYPE_DOUBLE);
-		g_signal_connect(G_OBJECT(window3), "updatewrite",G_CALLBACK(update_write_buffer), NULL);
-		g_signal_connect(G_OBJECT(window3), "setwriteprogress",G_CALLBACK(set_write_progress), NULL);
 		g_signal_connect(G_OBJECT(window3), "destroy",G_CALLBACK(gtk_main_quit), NULL);
-		
 		g_object_unref(G_OBJECT(builder));//释放GtkBuilder对象
-		
-		pthread_t p2;
-		pthread_create(&p2,NULL,&write_thread,window3);		//创建写线程
-		
+		gtk_widget_show_all(window3);
+		g_thread_new("writer", &write_thread, NULL);//创建写线程
     	gtk_main ();  
-    	
-		//pthread_join(p2,NULL);						//等待写线程结束
-		
 		printf ("write process exited\n");
 		return 0;
 	}
@@ -212,7 +156,7 @@ int main(int argc,char *argv[]){
     
 	printf ("main process exited\n");
 	
-	kill(pid1,0);								//结束两个子进程结束
+	kill(pid1,0);								//结束两个子进程
 	kill(pid2,0);
 	sem_destroy(full);							//删除信号灯；
 	sem_destroy(empty);
@@ -256,52 +200,31 @@ void openfilechoosedialog(GtkWidget *widget, gpointer data)
 void start_copy(GtkWidget *widget, gpointer data)
 {
 	printf("start_copy called\n");
+	struct stat statbuf;
+	fstat(fd,&statbuf);
+	filesize = statbuf.st_size;
+	bytecounts = 0;
 	sem_post(s1);
 	sem_post(s2);
 	return;
 }
-void set_read_progress(GtkWidget *widget, gpointer data)
-{
-	printf("set_read_progress called:%p,%lf",data,*(double*)data);
-	
-	//gtk_progress_bar_set_fraction((GtkProgressBar *)progressbar1,*data);
-	
 
-}
-void set_write_progress(GtkWidget *widget, gpointer data)
-{
-	printf("set_write_progress called:%p,%lf",data,*(double*)data);
-	
-	
-	
 
-}
-gboolean GSF_update_read_buffer(gpointer user_data)
+gboolean updateread(gpointer data)
 {
-	
-}
-void update_read_buffer(GtkWidget *widget, gpointer data)
-{
-	buffer_read;
-	g_timeout_add (guint interval,
-               GSF_update_read_buffer,
-               gpointer data);
 	GtkTextIter read_buffer_end;
 	gtk_text_buffer_get_end_iter(buffer_read,&read_buffer_end);
-	gtk_text_buffer_insert (buffer_read,&read_buffer_end, (char*)data,-1);
-	
-	return;
+	gtk_text_buffer_insert(buffer_read,&read_buffer_end, (char*)data,-1);
+	return FALSE;
 	
 }
-void update_write_buffer(GtkWidget *widget, gpointer data)
+gboolean updatewrite(gpointer data)
 {
-	buffer_write;
-	
 	GtkTextIter write_buffer_end;
 	gtk_text_buffer_get_end_iter(buffer_write,&write_buffer_end);
-	gtk_text_buffer_insert (buffer_write,&write_buffer_end, (char*)data,-1);
-	
-	return;
+	gtk_text_buffer_insert(buffer_write,&write_buffer_end, (char*)data,-1);
+	g_free(data);
+	return FALSE;
 }
 void* read_thread(void* data)
 {
@@ -311,11 +234,13 @@ void* read_thread(void* data)
 	sem_wait(s1);
 	printf("read_thread started\n");
 	
-	char message[100];
+	char *message;
+	message = g_new0(char,100);
 	sprintf(message,"read process started.\n");
-	g_signal_emit_by_name(window2,"updateread",message);
+	gdk_threads_add_timeout(0, updateread, message);
 	
 	int fd;
+	long bytecounts = 0;
 	if(-1 == (fd = open(s_name,O_RDONLY))){
 		printf("failed to open src_file:%s\n",strerror(errno));
 		exit(-1);
@@ -328,8 +253,9 @@ void* read_thread(void* data)
 		int sizeread = readbuf.size = read(fd,readbuf.buf,BUFSIZE);	//从文件中读数据
 		
 		printf("read %d bytes.\n",sizeread);
+		message = g_new0(char,100);
 		sprintf(message,"read %d bytes.\n",sizeread);
-		g_signal_emit_by_name(window2,"updateread",message);
+		gdk_threads_add_timeout(0, updateread, message);
 		
 		if(sizeread < 0)
 			printf("read error %d:%s \n",errno,strerror(errno));
@@ -345,9 +271,10 @@ void* read_thread(void* data)
 	//g_signal_emit_by_name(window2,"setreadprogress",&a);
 	
 	printf("read completed.\n");
+	message = g_new0(char,100);
 	sprintf(message,"read completed.\n");
-	g_signal_emit_by_name(window2,"updateread",message);
-	close(fd);
+	gdk_threads_add_timeout(0, updateread, message);
+	close(fd);	
 	return 0;
 }
 void* write_thread(void* data)
@@ -358,9 +285,10 @@ void* write_thread(void* data)
 	sem_wait(s2);
 	printf("write_thread started\n");
 	
-	char message[100];
+	char *message;
+	message = g_new0(char,100);
 	sprintf(message,"write process started.\n");
-	g_signal_emit_by_name(window3,"updatewrite",message);
+	gdk_threads_add_timeout(0, updatewrite, message);
 	
 	int fd;
 	if(-1 == (fd = open(d_name,O_CREAT|O_RDWR,S_IRWXU|S_IRWXO|S_IRWXG))){
@@ -379,8 +307,9 @@ void* write_thread(void* data)
 		int sizewrited = write(fd,writebuf.buf,writebuf.size);	//向文件中写数据
 		
 		printf("writed %d bytes.\n",sizewrited);
+		message = g_new0(char,100);
 		sprintf(message,"writed %d bytes.\n",sizewrited);
-		g_signal_emit_by_name(window3,"updatewrite",message);
+		gdk_threads_add_timeout(0, updatewrite, message);
 		
 		if(sizewrited < 0)
 			printf("write error %d:%s \n",errno,strerror(errno));
@@ -389,11 +318,12 @@ void* write_thread(void* data)
 		buf_index++;
 	}
 	double b = 1.0;
-	//g_signal_emit_by_name(window3,"setwriteprogress",&b);
+	
 	
 	printf("write completed.\n");
+	message = g_new0(char,100);
 	sprintf(message,"write completed.\n");
-	g_signal_emit_by_name(window3,"updatewrite",message);
+	gdk_threads_add_timeout(0, updatewrite, message);
 	close(fd);
 	return 0;
 }
