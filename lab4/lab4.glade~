@@ -53,14 +53,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSearchEntry" id="searchentry1">
-                            <property name="name">searchentry1</property>
+                          <object class="GtkEntry" id="entry1">
+                            <property name="name">entry1</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="primary_icon_name">edit-find-symbolic</property>
-                            <property name="primary_icon_activatable">False</property>
-                            <property name="primary_icon_sensitive">False</property>
+                            <property name="placeholder_text" translatable="yes">search pid</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -233,7 +230,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">0</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -247,7 +243,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">R</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -262,7 +257,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">system</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -277,7 +271,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">0</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -292,7 +285,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">25</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -307,7 +299,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">0</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -322,7 +313,6 @@
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">10240</property>
                             <property name="selectable">True</property>
                           </object>
                           <packing>
@@ -370,7 +360,6 @@
                         <property name="can_focus">True</property>
                         <property name="hscroll_policy">natural</property>
                         <property name="vscroll_policy">natural</property>
-                        <property name="headers_clickable">False</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <property name="fixed_height_mode">True</property>

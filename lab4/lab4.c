@@ -7,7 +7,8 @@ time_t boot_time; //系统启动时间
 //窗口控件指针声明
 GtkWidget *window1;
 GtkWidget *btn_new_process;
-GtkWidget *searchentry1;
+GtkWidget *pidentry1;
+GtkWidget *commandentry2;
 GtkWidget *btn_search;
 GtkWidget *btn_shutdown;
 GtkWidget *btn_endprocess;
@@ -35,6 +36,7 @@ GtkWidget *treeview1;
 GtkListStore *liststore1;
 GtkTreeIter list_iter;
 GtkCellRenderer *renderer;
+GtkTreeSelection *treeselection;
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +52,8 @@ int main(int argc, char *argv[])
 	//4.获取控件指针
 	window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
 	btn_new_process = GTK_WIDGET(gtk_builder_get_object(builder, "btn_new_process"));
-	searchentry1 = GTK_WIDGET(gtk_builder_get_object(builder, "searchentry1"));
+	pidentry1 = GTK_WIDGET(gtk_builder_get_object(builder, "entry1"));
+	commandentry2 = GTK_WIDGET(gtk_builder_get_object(builder, "entry2"));
 	btn_search = GTK_WIDGET(gtk_builder_get_object(builder, "btn_search"));
 	btn_shutdown = GTK_WIDGET(gtk_builder_get_object(builder, "btn_shutdown"));
 	btn_endprocess = GTK_WIDGET(gtk_builder_get_object(builder, "btn_endprocess"));
@@ -76,6 +79,7 @@ int main(int argc, char *argv[])
 	//scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
 	//liststore1 = GTK_WIDGET(gtk_builder_get_object(builder, "liststore1"));
 	treeview1 = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
+	//treeselection = GTK_WIDGET(gtk_builder_get_object(builder, "treeview-selection1"));
 	GtkTreeViewColumn *column_name = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_name"));
 	GtkTreeViewColumn *column_pid = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_pid"));
 	GtkTreeViewColumn *column_ppid = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_ppid"));
@@ -142,6 +146,7 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(btn_search), "clicked", G_CALLBACK(search_pid), NULL);
 	g_signal_connect(G_OBJECT(btn_shutdown), "clicked", G_CALLBACK(confirm_shutdown), NULL);
 	g_signal_connect(G_OBJECT(btn_endprocess), "clicked", G_CALLBACK(confirm_kill), NULL);
+	//g_signal_connect(G_OBJECT(treeview1), "row-activated", G_CALLBACK(show_detail), NULL);
 
 	gtk_widget_show_all(window1);
 
@@ -197,31 +202,96 @@ void *collect_pids(void *data)
 		PROCESS_list *pro_list = g_new0(PROCESS_list, 1);
 		pro_list->pidinfos = pidinfos;
 		pro_list->num = pidnum;
-		gdk_threads_add_timeout_full( G_PRIORITY_HIGH_IDLE,0, update_list, pro_list,NULL);
+		gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 0, update_list, pro_list, NULL);
 	}
 }
 void new_process(GtkWidget *widget, gpointer data)
 {
 	printf("new_process is called\n");
-
+	char buffer[100] = "";
+	strcpy(buffer,gtk_entry_get_text((GtkEntry *)commandentry2));
+	
+	system(buffer);
+	printf("%s\n",buffer);
 	return;
 }
 void search_pid(GtkWidget *widget, gpointer data)
 {
 	printf("search_pid is called\n");
+	char buf[10];
+	int pid;
+	sscanf(gtk_entry_get_text(GTK_ENTRY(pidentry1)), "%d", &pid);
+	if (pid <= 0)
+		return;
+	PIDINFO pidinfo;
+	int rs = get_info_pid(&pidinfo, pid);
+	if (-1 == rs)
+		printf("get_CPUinfo failed.\n");
+	show_detail(NULL, &pidinfo);
 
 	return;
 }
 void confirm_shutdown(GtkWidget *widget, gpointer data)
 {
 	printf("confirm_shutdown is called\n");
-	//system("poweroff\n");
+	GtkWidget *dialog;
+	gint res;
+	dialog = gtk_message_dialog_new((GtkWindow *)window1,
+									GTK_DIALOG_MODAL,
+									GTK_MESSAGE_WARNING,
+										GTK_BUTTONS_YES_NO,
+									"确认关机吗？");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res == GTK_RESPONSE_YES)
+		system("poweroff\n");
+	gtk_widget_destroy(dialog);
 	return;
 }
 void confirm_kill(GtkWidget *widget, gpointer data)
 {
 	printf("confirm_kill is called\n");
+	int pid;
+	char buf[20];
+	strcpy(buf,gtk_label_get_text((GtkLabel *)p_pid));
+	if(buf[0] < '0' || buf[0]>'9')
+		return ;
+	sscanf(buf, "%d", &pid);
+	GtkWidget *dialog;
+	gint res;
+	dialog = gtk_message_dialog_new((GtkWindow *)window1,
+									GTK_DIALOG_MODAL,
+									GTK_MESSAGE_WARNING,
+										GTK_BUTTONS_YES_NO,
+									"确认结束进程吗？");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res == GTK_RESPONSE_YES)
+	{
+		sprintf(buf, "kill %d", pid);
+		system(buf);
+	}
 
+	gtk_widget_destroy(dialog);
+
+	return;
+}
+void show_detail(GtkWidget *widget, gpointer data)
+{
+	printf("show_detail is called\n");
+	PIDINFO *pidinfo = data;
+	char buf[20];
+	gtk_label_set_text((GtkLabel *)p_name, pidinfo->comm);
+	sprintf(buf, "%d", pidinfo->pid);
+	gtk_label_set_text((GtkLabel *)p_pid, buf);
+	sprintf(buf, "%c", pidinfo->state);
+	gtk_label_set_text((GtkLabel *)p_state, buf);
+	sprintf(buf, "%d", pidinfo->ppid);
+	gtk_label_set_text((GtkLabel *)p_ppid, buf);
+	sprintf(buf, "%d", pidinfo->priority);
+	gtk_label_set_text((GtkLabel *)p_priority, buf);
+	sprintf(buf, "%d", pidinfo->nice);
+	gtk_label_set_text((GtkLabel *)p_nice, buf);
+	sprintf(buf, "%d", pidinfo->size);
+	gtk_label_set_text((GtkLabel *)p_memsize, buf);
 	return;
 }
 
