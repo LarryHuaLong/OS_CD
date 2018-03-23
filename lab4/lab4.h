@@ -131,7 +131,7 @@ int get_CPUinfo(CPUINFO *CPUs, int *CPUnum)
 		if ((ptr = strstr(line, "model name")))
 		{
 			ptr = strstr(line, ":");
-			sscanf(ptr + 1,"%[^\n]",CPUs[count].type);
+			sscanf(ptr + 1, "%[^\n]", CPUs[count].type);
 			continue;
 		}
 		if ((ptr = strstr(line, "cpu MHz")))
@@ -217,6 +217,7 @@ int get_all_pids(int *pids, int *pidnum)
 		}
 	}
 	closedir(p_dir);
+	*pidnum = count;
 	printf("%d\n", count);
 	for (int i = 0; i < count; i++)
 	{
@@ -266,7 +267,8 @@ int get_cpu_rate(int *total0, int *idle0, double *cpu_rate)
 	int idle1;
 	double total_d, idle_d, rate;
 	int rs = get_CPU_stat(&total1, &idle1);
-	if (-1 == rs){
+	if (-1 == rs)
+	{
 		printf("get_CPU_stat failed.\n");
 		return -1;
 	}
@@ -354,19 +356,28 @@ void new_process(GtkWidget *widget, gpointer data);
 void search_pid(GtkWidget *widget, gpointer data);
 void confirm_shutdown(GtkWidget *widget, gpointer data);
 void confirm_kill(GtkWidget *widget, gpointer data);
-typedef struct UPDATE_LABELS{
+typedef struct UPDATE_LABELS
+{
 	double cpurate;
 	double memrate;
 	double swaprate;
 	time_t nowtime;
-}UPDATE_LABELS;
+} UPDATE_LABELS;
 gboolean update_lables(gpointer pdata);
 
-enum{  
-    COLUMN_NAME,  
-    COLUMN_PID,  
-    COLUMU_PPID, 
+enum
+{
+	COLUMN_NAME,
+	COLUMN_PID,
+	COLUMU_PPID,
 	COLUMU_MEMSIZE,
-	COLUMU_PRIORITY, 
-    N_COLUMNS  
+	COLUMU_PRIORITY,
+	N_COLUMNS
 };
+typedef struct PROCESS_list
+{
+	PIDINFO *pidinfos;
+	int num;
+} PROCESS_list;
+gboolean update_list(gpointer pdata);
+void *collect_pids(void *data);

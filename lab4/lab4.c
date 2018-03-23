@@ -82,31 +82,19 @@ int main(int argc, char *argv[])
 	GtkTreeViewColumn *column_memsize = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_memsize"));
 	GtkTreeViewColumn *column_priority = GTK_TREE_VIEW_COLUMN(gtk_builder_get_object(builder, "column_priority"));
 	liststore1 = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
-	gtk_list_store_append(liststore1, &list_iter);
-	gtk_list_store_set(liststore1, &list_iter,
-					   COLUMN_NAME, "P1",
-					   COLUMN_PID, 1,
-					   COLUMU_PPID, 0,
-					   COLUMU_MEMSIZE, 123123,
-					   COLUMU_PRIORITY, 20, -1);
-	//gtk_list_store_append(liststore1, &list_iter);
-	//gtk_list_store_set(liststore1, &list_iter,
-	//				   COLUMN_NAME, "P1",
-	//				   COLUMN_PID, 13,
-	//				   COLUMU_PPID, 0,
-	//				   COLUMU_MEMSIZE, 1123,
-	//				   COLUMU_PRIORITY, 10, -1);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview1),GTK_TREE_MODEL(liststore1));
+	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview1), GTK_TREE_MODEL(liststore1));
 	renderer = gtk_cell_renderer_text_new();
-	printf("%p,%p,%p,%p,%p\n",column_name,column_pid,column_ppid,column_memsize,column_priority);
-	gtk_tree_view_column_add_attribute((column_name),renderer, "text", COLUMN_NAME);
-	gtk_tree_view_column_add_attribute((column_pid),renderer, "text", COLUMN_PID);
-	gtk_tree_view_column_add_attribute((column_ppid),renderer, "text", COLUMU_PPID);
-	gtk_tree_view_column_add_attribute((column_memsize),renderer, "text", COLUMU_MEMSIZE);
-	gtk_tree_view_column_add_attribute((column_priority),renderer, "text", COLUMU_PRIORITY);
+	gtk_tree_view_column_pack_start(column_name, renderer, TRUE);
+	gtk_tree_view_column_add_attribute((column_name), renderer, "text", COLUMN_NAME);
+	gtk_tree_view_column_pack_start(column_pid, renderer, TRUE);
+	gtk_tree_view_column_add_attribute((column_pid), renderer, "text", COLUMN_PID);
+	gtk_tree_view_column_pack_start(column_ppid, renderer, TRUE);
+	gtk_tree_view_column_add_attribute((column_ppid), renderer, "text", COLUMU_PPID);
+	gtk_tree_view_column_pack_start(column_memsize, renderer, TRUE);
+	gtk_tree_view_column_add_attribute((column_memsize), renderer, "text", COLUMU_MEMSIZE);
+	gtk_tree_view_column_pack_start(column_priority, renderer, TRUE);
+	gtk_tree_view_column_add_attribute((column_priority), renderer, "text", COLUMU_PRIORITY);
 
-	//gtk_container_add(GTK_CONTAINER(scrolledwindow1), treeview1);
-	//gtk_widget_show_all(scrolledwindow1);
 	int rs;
 	char hostname[100];
 	size_t len;
@@ -157,7 +145,8 @@ int main(int argc, char *argv[])
 
 	gtk_widget_show_all(window1);
 
-	g_thread_new("worker", &collect_rates, NULL);
+	g_thread_new("worker1", &collect_rates, NULL);
+	g_thread_new("worker2", &collect_pids, NULL);
 	gtk_main();
 	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	return 0;
@@ -168,6 +157,7 @@ void *collect_rates(void *data)
 	int idle0 = 0;
 	int index = 0;
 	UPDATE_LABELS *ulables;
+
 	while (1)
 	{
 		sleep(1);
@@ -181,8 +171,33 @@ void *collect_rates(void *data)
 			ulables->memrate = 0.0;
 		cpu_rates[index] = ulables->cpurate;
 		mem_rates[index++] = ulables->memrate;
+		if (index >= 120)
+			index = 0;
 		time_t now_time = time(&(ulables->nowtime));
 		gdk_threads_add_timeout(0, update_lables, ulables);
+	}
+}
+void *collect_pids(void *data)
+{
+	int pids[1000];
+	int pidnum = 0;
+	while (1)
+	{
+		sleep(2);
+		int rs = get_all_pids(pids, &pidnum);
+		if (-1 == rs)
+			printf("get_all_pid failed.\n");
+		PIDINFO *pidinfos = g_new0(PIDINFO, pidnum);
+		for (int i = 0; i < pidnum; i++)
+		{
+			int rs = get_info_pid(&pidinfos[i], pids[i]);
+			if (-1 == rs)
+				printf("get_info_pid failed.\n");
+		}
+		PROCESS_list *pro_list = g_new0(PROCESS_list, 1);
+		pro_list->pidinfos = pidinfos;
+		pro_list->num = pidnum;
+		gdk_threads_add_timeout_full( G_PRIORITY_HIGH_IDLE,0, update_list, pro_list,NULL);
 	}
 }
 void new_process(GtkWidget *widget, gpointer data)
@@ -218,8 +233,6 @@ gboolean update_lables(gpointer pdata)
 	gtk_label_set_text((GtkLabel *)label_cpu_rate, buf);
 	sprintf(buf, "%.2lf%%", ulables->memrate);
 	gtk_label_set_text((GtkLabel *)label_mem_rate, buf);
-	//sprintf(buf, "%.2lf%%", ulables->swaprate);
-	//gtk_label_set_text((GtkLabel *)label_swap_rate, buf);
 	struct tm *now_tm = localtime(&(ulables->nowtime));
 	sprintf(buf, "%d:%d:%d", now_tm->tm_hour, now_tm->tm_min, now_tm->tm_sec);
 	gtk_label_set_text((GtkLabel *)label_current_time, buf);
@@ -228,5 +241,25 @@ gboolean update_lables(gpointer pdata)
 	sprintf(buf, "%d:%d:%d", run_tm->tm_hour, run_tm->tm_min, run_tm->tm_sec);
 	gtk_label_set_text((GtkLabel *)label_run_time, buf);
 	g_free(ulables);
+	return FALSE;
+}
+
+gboolean update_list(gpointer pdata)
+{
+	PROCESS_list *pro_list = pdata;
+	PIDINFO *pidinfos = pro_list->pidinfos;
+	gtk_list_store_clear(liststore1);
+	for (int i = 0; i < pro_list->num; i++)
+	{
+		gtk_list_store_append(liststore1, &list_iter);
+		gtk_list_store_set(liststore1, &list_iter,
+						   COLUMN_NAME, pidinfos[i].comm,
+						   COLUMN_PID, pidinfos[i].pid,
+						   COLUMU_PPID, pidinfos[i].ppid,
+						   COLUMU_MEMSIZE, pidinfos[i].size,
+						   COLUMU_PRIORITY, pidinfos[i].priority, -1);
+	}
+	g_free(pro_list->pidinfos);
+	g_free(pro_list);
 	return FALSE;
 }

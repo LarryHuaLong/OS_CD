@@ -261,7 +261,7 @@ void* read_thread(void* data)
 	int buf_index = 0;
 	BUFFER readbuf;
 	while(1){
-	//sleep(1);
+	sleep(1);
 		int sizeread = readbuf.size = read(fd,readbuf.buf,BUFSIZE);	//从文件中读数据
 		printf("read %d bytes.\n",sizeread);
 		message = g_new0(char,100);
@@ -313,7 +313,7 @@ void* write_thread(void* data)
 	int buf_index = 0;
 	BUFFER writebuf;
 	while(1){
-	//sleep(1);
+	sleep(1);
 		buf_index = buf_index % BUFNUM;			//缓存区索引，根据缓存区数量循环
 		sem_wait(full);
 		memcpy((void*)&writebuf,(void*)&bufs[buf_index],sizeof(BUFFER));	//从缓存区取数据

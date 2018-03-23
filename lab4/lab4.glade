@@ -370,7 +370,6 @@
                         <property name="can_focus">True</property>
                         <property name="hscroll_policy">natural</property>
                         <property name="vscroll_policy">natural</property>
-                        <property name="headers_clickable">False</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <property name="fixed_height_mode">True</property>
@@ -391,6 +390,7 @@
                             <property name="clickable">True</property>
                             <property name="reorderable">True</property>
                             <property name="sort_indicator">True</property>
+                            <property name="sort_column_id">0</property>
                           </object>
                         </child>
                         <child>
@@ -402,6 +402,7 @@
                             <property name="clickable">True</property>
                             <property name="reorderable">True</property>
                             <property name="sort_indicator">True</property>
+                            <property name="sort_column_id">1</property>
                           </object>
                         </child>
                         <child>
@@ -413,6 +414,7 @@
                             <property name="clickable">True</property>
                             <property name="reorderable">True</property>
                             <property name="sort_indicator">True</property>
+                            <property name="sort_column_id">2</property>
                           </object>
                         </child>
                         <child>
@@ -424,6 +426,7 @@
                             <property name="clickable">True</property>
                             <property name="reorderable">True</property>
                             <property name="sort_indicator">True</property>
+                            <property name="sort_column_id">3</property>
                           </object>
                         </child>
                         <child>
@@ -435,6 +438,7 @@
                             <property name="clickable">True</property>
                             <property name="reorderable">True</property>
                             <property name="sort_indicator">True</property>
+                            <property name="sort_column_id">4</property>
                           </object>
                         </child>
                       </object>
