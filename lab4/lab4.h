@@ -5,12 +5,76 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
-#include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
+#include <cairo.h>
+
+void *collect_rates(void *data); //线程，收集cpu利用率和内存使用率
+void *collect_pids(void *data);
+void new_process(GtkWidget *widget, gpointer data);
+void search_pid(GtkWidget *widget, gpointer data);
+void confirm_shutdown(GtkWidget *widget, gpointer data);
+void confirm_kill(GtkWidget *widget, gpointer data);
+void show_detail(GtkWidget *widget, gpointer data);
+gboolean update_lables(gpointer pdata);
+gboolean update_list(gpointer pdata);
+gboolean update_cpu_plots(GtkWidget *widget, cairo_t *cr, gpointer data);
+gboolean update_mem_plots(GtkWidget *widget, cairo_t *cr, gpointer data);
+
+typedef struct UPDATE_LABELS
+{
+	double cpurate;
+	double memrate;
+	double swaprate;
+	time_t nowtime;
+} UPDATE_LABELS;
+
+enum
+{
+	COLUMN_NAME,
+	COLUMN_PID,
+	COLUMU_PPID,
+	COLUMU_MEMSIZE,
+	COLUMU_PRIORITY,
+	N_COLUMNS
+};
+
+typedef struct PIDINFO
+{
+	int pid;	   //进程号
+	char comm[20]; //程序名
+	char state;	//程序状态
+	int ppid;	  //父进程id
+	int priority;  //动态优先级
+	int nice;	  //静态优先级
+	int size;	  //占用内存大小
+} PIDINFO;
+
+typedef struct PROCESS_list
+{
+	PIDINFO *pidinfos;
+	int num;
+} PROCESS_list;
+
+typedef struct CPU_RATES
+{
+	double cpu_rates[120];
+} CPU_RATES;
+
+typedef struct MEM_RATES
+{
+	double mem_rates[120];
+} MEM_RATES;
+
+typedef struct CPUINFO
+{
+	char type[100];
+	double speed;
+} CPUINFO;
+
 
 int get_hostname(char *hostname, size_t *plen)
 {
-	//printf("getting hostname...\n");
 	char filename[] = "/proc/sys/kernel/hostname";
 	FILE *fin;
 	if (hostname == NULL)
@@ -18,7 +82,6 @@ int get_hostname(char *hostname, size_t *plen)
 		printf("error:hostname(NULL)\n");
 		return -1;
 	}
-
 	if (plen == NULL)
 	{
 		printf("error:plen(NULL)\n");
@@ -36,14 +99,11 @@ int get_hostname(char *hostname, size_t *plen)
 	}
 	fclose(fin);
 	*plen = strlen(hostname);
-	//printf("hostname:%s,len=%d\n", hostname, *plen);
-
 	return 0;
 }
 
 int get_uptime(double *total_time, double *free_time)
 {
-	//printf("getting uptime...\n");
 	char filename[] = "/proc/uptime";
 	FILE *fin;
 	if (total_time == NULL)
@@ -67,13 +127,11 @@ int get_uptime(double *total_time, double *free_time)
 		return -1;
 	}
 	fclose(fin);
-	//printf("total_time=%lf,free_time=%lf\n", *total_time, *free_time);
-
 	return 0;
 }
+
 int get_osinfo(char *ostype, char *osrelease)
 {
-	//printf("getting osinfo...\n");
 	char filename[] = "/proc/version";
 	FILE *fin;
 	if (ostype == NULL)
@@ -97,18 +155,11 @@ int get_osinfo(char *ostype, char *osrelease)
 		return -1;
 	}
 	fclose(fin);
-	//printf("ostype=%s,osrelease=%s\n", ostype, osrelease);
-
 	return 0;
 }
-typedef struct CPUINFO
-{
-	char type[100];
-	double speed;
-} CPUINFO;
+
 int get_CPUinfo(CPUINFO *CPUs, int *CPUnum)
 {
-	//printf("getting CPUinfo...\n");
 	char filename[] = "/proc/cpuinfo";
 	FILE *fin;
 	if (CPUs == NULL)
@@ -145,20 +196,8 @@ int get_CPUinfo(CPUINFO *CPUs, int *CPUnum)
 	free(line);
 	fclose(fin);
 	*CPUnum = count;
-	//for (int i = 0; i < count; i++)
-	//	printf("CPU%d:%s%.3lf MHz\n", i, CPUs[i].type, CPUs[i].speed);
 	return 0;
 }
-typedef struct PIDINFO
-{
-	int pid;	   //进程号
-	char comm[20]; //程序名
-	char state;	//程序状态
-	int ppid;	  //父进程id
-	int priority;  //动态优先级
-	int nice;	  //静态优先级
-	int size;	  //占用内存大小
-} PIDINFO;
 
 int get_info_pid(PIDINFO *pidinfo, int pid)
 {
@@ -167,7 +206,6 @@ int get_info_pid(PIDINFO *pidinfo, int pid)
 		printf("error:pidinfo(NULL)\n");
 		return -1;
 	}
-	//printf("getting PIDinfo...\n");
 	char filename[50];
 	sprintf(filename, "/proc/%d/stat", pid);
 	FILE *fin;
@@ -194,13 +232,11 @@ int get_info_pid(PIDINFO *pidinfo, int pid)
 	fscanf(fin, "%d", &(pidinfo->size));
 	pidinfo->size *= 4;
 	fclose(fin);
-	//printf("pid:%d\tcomm:%s\tstate:%c\tppid:%d\tpriority:%d\tnice:%d\tmemsize:%d\n", pidinfo->pid, pidinfo->comm, pidinfo->state, pidinfo->ppid, pidinfo->priority, pidinfo->nice, pidinfo->size);
 	return 0;
 }
 int get_all_pids(int *pids, int *pidnum)
 {
 	int count = 0;
-
 	DIR *p_dir;
 	struct dirent *p_dirent;
 
@@ -218,19 +254,11 @@ int get_all_pids(int *pids, int *pidnum)
 	}
 	closedir(p_dir);
 	*pidnum = count;
-	//printf("%d\n", count);
-	//for (int i = 0; i < count; i++)
-	//{
-	//	printf("%d\t", pids[i]);
-	//	if (i % 10 == 9)
-	//		putchar('\n');
-	//}
-	//putchar('\n');
 	return 0;
 }
+
 int get_CPU_stat(int *p_total, int *p_idle)
 {
-	//printf("getting CPU usage...\n");
 	int user, nice, system, idle, iowait, irq, softirq;
 	char filename[] = "/proc/stat";
 	FILE *fin;
@@ -252,10 +280,10 @@ int get_CPU_stat(int *p_total, int *p_idle)
 	fscanf(fin, "%*s%d%d%d%d%d%d%d", &user, &nice, &system, &idle, &iowait, &irq, &softirq);
 	*p_total = user + nice + system + idle + iowait + irq + softirq;
 	*p_idle = idle;
-	//printf("cputotal:%d,cpuidle:%d\n", *p_total, *p_idle);
 	fclose(fin);
 	return 0;
 }
+
 int get_cpu_rate(int *total0, int *idle0, double *cpu_rate)
 {
 	if (cpu_rate == NULL)
@@ -279,9 +307,9 @@ int get_cpu_rate(int *total0, int *idle0, double *cpu_rate)
 	*cpu_rate = rate;
 	*total0 = total1;
 	*idle0 = idle1;
-	printf("CPU rate:%.2lf%%\n", rate);
 	return 0;
 }
+
 int get_mem_rate(double *mem_rate, double *swap_rate)
 {
 	if (mem_rate == NULL)
@@ -294,7 +322,6 @@ int get_mem_rate(double *mem_rate, double *swap_rate)
 		printf("error:swap_rate(NULL)\n");
 		return -1;
 	}
-	//printf("getting Memary usage...\n");
 	double memtotal, memfree, swaptotal, swapfree;
 	char filename[] = "/proc/meminfo";
 	FILE *fin;
@@ -347,38 +374,5 @@ int get_mem_rate(double *mem_rate, double *swap_rate)
 		*swap_rate = 100 * (swaptotal - swapfree) / swaptotal;
 	else
 		*swap_rate = 0.0;
-	//printf("mem:%.2lf%%,swap:%.2lf%%\n", *mem_rate, *swap_rate);
 	return 0;
 }
-
-void *collect_rates(void *data); //线程，收集cpu利用率和内存使用率
-void new_process(GtkWidget *widget, gpointer data);
-void search_pid(GtkWidget *widget, gpointer data);
-void confirm_shutdown(GtkWidget *widget, gpointer data);
-void confirm_kill(GtkWidget *widget, gpointer data);
-void show_detail(GtkWidget *widget, gpointer data);
-typedef struct UPDATE_LABELS
-{
-	double cpurate;
-	double memrate;
-	double swaprate;
-	time_t nowtime;
-} UPDATE_LABELS;
-gboolean update_lables(gpointer pdata);
-
-enum
-{
-	COLUMN_NAME,
-	COLUMN_PID,
-	COLUMU_PPID,
-	COLUMU_MEMSIZE,
-	COLUMU_PRIORITY,
-	N_COLUMNS
-};
-typedef struct PROCESS_list
-{
-	PIDINFO *pidinfos;
-	int num;
-} PROCESS_list;
-gboolean update_list(gpointer pdata);
-void *collect_pids(void *data);
