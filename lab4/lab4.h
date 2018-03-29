@@ -9,17 +9,18 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-void *collect_rates(void *data); //线程，收集cpu利用率和内存使用率
-void *collect_pids(void *data);
-void new_process(GtkWidget *widget, gpointer data);
-void search_pid(GtkWidget *widget, gpointer data);
-void confirm_shutdown(GtkWidget *widget, gpointer data);
-void confirm_kill(GtkWidget *widget, gpointer data);
-void show_detail(GtkWidget *widget, gpointer data);
-gboolean update_lables(gpointer pdata);
-gboolean update_list(gpointer pdata);
-gboolean update_cpu_plots(GtkWidget *widget, cairo_t *cr, gpointer data);
-gboolean update_mem_plots(GtkWidget *widget, cairo_t *cr, gpointer data);
+void *collect_rates(void *data);										  //线程函数，收集cpu利用率和内存使用率
+void *collect_pids(void *data);											  //线程函数，收集进程列表和进程信息
+void *newthread(void *data);											  //线程函数，运行输入得命令
+void new_thread(GtkWidget *widget, gpointer data);						  //回调函数，创建新线程
+void search_pid(GtkWidget *widget, gpointer data);						  //回调函数，搜索进程
+void confirm_shutdown(GtkWidget *widget, gpointer data);				  //回调函数，关机
+void confirm_kill(GtkWidget *widget, gpointer data);					  //回调函数，杀死进程
+void show_detail(GtkWidget *widget, gpointer data);						  //回调函数，显示进程详细信息
+gboolean update_lables(gpointer pdata);									  //timeout处理函数，更新标签信息
+gboolean update_list(gpointer pdata);									  //timeout处理函数，更新进程列表
+gboolean update_cpu_plots(GtkWidget *widget, cairo_t *cr, gpointer data); //timeout处理函数，更新CPU使用率曲线
+gboolean update_mem_plots(GtkWidget *widget, cairo_t *cr, gpointer data); //timeout处理函数，更新内存使用率曲线
 
 typedef struct UPDATE_LABELS
 {
@@ -41,13 +42,13 @@ enum
 
 typedef struct PIDINFO
 {
-	int pid;	   //进程号
-	char comm[20]; //程序名
-	char state;	//程序状态
-	int ppid;	  //父进程id
-	int priority;  //动态优先级
-	int nice;	  //静态优先级
-	int size;	  //占用内存大小
+	int pid;	   	//进程号
+	char comm[20]; 	//程序名
+	char state;		//程序状态
+	int ppid;	  	//父进程id
+	int priority;  	//动态优先级
+	int nice;	  	//静态优先级
+	int size;	  	//占用内存大小
 } PIDINFO;
 
 typedef struct PROCESS_list
@@ -71,7 +72,6 @@ typedef struct CPUINFO
 	char type[100];
 	double speed;
 } CPUINFO;
-
 
 int get_hostname(char *hostname, size_t *plen)
 {
@@ -341,28 +341,24 @@ int get_mem_rate(double *mem_rate, double *swap_rate)
 		{
 			ptr = strstr(line, ":");
 			sscanf(ptr + 1, "%lf", &memtotal);
-			printf("MemTotal:\t%lf\n", memtotal);
 			continue;
 		}
 		if ((ptr = strstr(line, "MemFree")))
 		{
 			ptr = strstr(line, ":");
 			sscanf(ptr + 1, "%lf", &memfree);
-			printf("MemFree:\t%lf\n", memfree);
 			continue;
 		}
 		if ((ptr = strstr(line, "SwapTotal")))
 		{
 			ptr = strstr(line, ":");
 			sscanf(ptr + 1, "%lf", &swaptotal);
-			printf("SwapTotal:\t%lf\n", swaptotal);
 			continue;
 		}
 		if ((ptr = strstr(line, "SwapFree")))
 		{
 			ptr = strstr(line, ":");
 			sscanf(ptr + 1, "%lf", &swapfree);
-			printf("SwapFree:\t%lf\n", swapfree);
 			continue;
 		}
 	}

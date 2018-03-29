@@ -49,9 +49,9 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="btn_new_process">
-                            <property name="label" translatable="yes">新进程</property>
-                            <property name="name">btn_new_process</property>
+                          <object class="GtkButton" id="btn_new_thread">
+                            <property name="label" translatable="yes">新线程</property>
+                            <property name="name">btn_new_thread</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>

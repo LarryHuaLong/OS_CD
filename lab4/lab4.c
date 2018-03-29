@@ -5,7 +5,7 @@ CPU_RATES cpurates = {0.0}; //CPU历史利用率
 MEM_RATES memrates = {0.0}; //MEM历史利用率
 //窗口控件指针声明
 GtkWidget *window1;
-GtkWidget *btn_new_process;
+GtkWidget *btn_new_thread;
 GtkWidget *pidentry1;
 GtkWidget *commandentry2;
 GtkWidget *btn_search;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	}
 	//4.获取控件指针
 	window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
-	btn_new_process = GTK_WIDGET(gtk_builder_get_object(builder, "btn_new_process"));
+	btn_new_thread = GTK_WIDGET(gtk_builder_get_object(builder, "btn_new_thread"));
 	pidentry1 = GTK_WIDGET(gtk_builder_get_object(builder, "entry1"));
 	commandentry2 = GTK_WIDGET(gtk_builder_get_object(builder, "entry2"));
 	btn_search = GTK_WIDGET(gtk_builder_get_object(builder, "btn_search"));
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 	gtk_label_set_text((GtkLabel *)label_cpu_speed, buf);
 	//连接信号与回调函数
 	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(G_OBJECT(btn_new_process), "clicked", G_CALLBACK(new_process), NULL);
+	g_signal_connect(G_OBJECT(btn_new_thread), "clicked", G_CALLBACK(new_thread), NULL);
 	g_signal_connect(G_OBJECT(btn_search), "clicked", G_CALLBACK(search_pid), NULL);
 	g_signal_connect(G_OBJECT(btn_shutdown), "clicked", G_CALLBACK(confirm_shutdown), NULL);
 	g_signal_connect(G_OBJECT(btn_endprocess), "clicked", G_CALLBACK(confirm_kill), NULL);
@@ -189,6 +189,7 @@ void *collect_rates(void *data)
 		time_t now_time = time(&(ulables->nowtime));
 		gdk_threads_add_timeout(0, update_lables, ulables);
 	}
+	return NULL;
 }
 
 void *collect_pids(void *data)
@@ -216,16 +217,26 @@ void *collect_pids(void *data)
 		//更新进程列表
 		gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 0, update_list, pro_list, NULL);
 	}
+	return NULL;
 }
 
-void new_process(GtkWidget *widget, gpointer data)
+void *newthread(void *data)
 {
-	printf("new_process is called\n");
-	char buffer[100] = "";
+	char *buffer = data;
+	int res = system(buffer);
+	printf("system(\"%s\") returned %d\n", buffer, res);
+	g_free(buffer);
+	return NULL;
+}
+
+void new_thread(GtkWidget *widget, gpointer data)
+{
+	printf("new_thread is called\n");
+	char *buffer = g_new0(char, 100);
 	//获取命令输入框中得命令
 	strcpy(buffer, gtk_entry_get_text((GtkEntry *)commandentry2));
-	//终端执行buffer中得命令
-	system(buffer);
+	//创建新线程，终端执行buffer中得命令
+	g_thread_new("new_thread", &newthread, buffer);
 	return;
 }
 
