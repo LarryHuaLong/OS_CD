@@ -90,8 +90,7 @@ int main(int argc, char *argv[])
 		//2.创建GtkBuilder对象，GtkBuilder在<gtk/gtk.h>声明
 		GtkBuilder *builder_read = gtk_builder_new();
 		//3.读取test.glade文件的信息，保存在builder中
-		if (!gtk_builder_add_from_file(builder_read, "reader.glade", NULL))
-		{
+		if (!gtk_builder_add_from_file(builder_read, "reader.glade", NULL)){
 			printf("connot load file!");
 		}
 		//4.获取窗口指针，注意"window1"要和glade里面的标签名词匹配
@@ -119,8 +118,7 @@ int main(int argc, char *argv[])
 		//2.创建GtkBuilder对象，GtkBuilder在<gtk/gtk.h>声明
 		GtkBuilder *builder_write = gtk_builder_new();
 		//3.读取test.glade文件的信息，保存在builder中
-		if (!gtk_builder_add_from_file(builder_write, "writer.glade", NULL))
-		{
+		if (!gtk_builder_add_from_file(builder_write, "writer.glade", NULL)){
 			printf("connot load file!");
 		}
 		//4.获取窗口指针，注意"window1"要和glade里面的标签名词匹配
@@ -144,8 +142,7 @@ int main(int argc, char *argv[])
 	//2.创建GtkBuilder对象，GtkBuilder在<gtk/gtk.h>声明
 	GtkBuilder *builder_main = gtk_builder_new();
 	//3.读取test.glade文件的信息，保存在builder中
-	if (!gtk_builder_add_from_file(builder_main, "chooser.glade", NULL))
-	{
+	if (!gtk_builder_add_from_file(builder_main, "chooser.glade", NULL)){
 		printf("connot load file!");
 	}
 	//4.获取窗口指针，注意"window1"要和glade里面的标签名词匹配
@@ -157,9 +154,7 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(button_openfile), "clicked", G_CALLBACK(openfilechoosedialog), NULL);
 	g_signal_connect(G_OBJECT(button_start), "clicked", G_CALLBACK(start_copy), NULL);
 	g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	
 	gtk_main();
-
 	g_object_unref(G_OBJECT(builder_main)); //释放GtkBuilder对象
 	printf("main process exited\n");
 	kill(pid1, 0); //结束两个子进程
@@ -187,8 +182,7 @@ void openfilechoosedialog(GtkWidget *widget, gpointer data)
 										 GTK_RESPONSE_ACCEPT,
 										 NULL);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	if (res == GTK_RESPONSE_ACCEPT)
-	{
+	if (res == GTK_RESPONSE_ACCEPT){
 		char *filename;
 		GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
 		filename = gtk_file_chooser_get_filename(chooser);
@@ -212,9 +206,7 @@ void start_copy(GtkWidget *widget, gpointer data)
 	printf("source file:%s\ndest file:%s\n", s_name, d_name);
 	struct stat statbuf;
 	if (-1 == stat(s_name, &statbuf))
-	{
 		perror("stat");
-	}
 	*pfilesize = statbuf.st_size;
 	printf("filesize:%ld\n", *pfilesize);
 	sem_post(s1);
@@ -248,8 +240,7 @@ void *read_thread(void *data)
 	message = g_new0(char, 100);
 	sprintf(message, "read process started.\n");
 	gdk_threads_add_timeout(0, updateread, message);
-	if (-1 == (fd = open(s_name, O_RDONLY)))
-	{
+	if (-1 == (fd = open(s_name, O_RDONLY))){
 		printf("failed to open src_file:%s\n", strerror(errno));
 		exit(-1);
 	}
@@ -257,10 +248,9 @@ void *read_thread(void *data)
 		printf("openfilename : %s\n", s_name);
 	int buf_index = 0;
 	BUFFER readbuf;
-	while (1)
-	{
-		sleep(1);
-		int sizeread = readbuf.size = read(fd, readbuf.buf, BUFSIZE); //从文件中读数据
+	while (1){
+		sleep(1); //为观察程序执行过程而设置每秒拷贝一段数据
+		int sizeread = readbuf.size = read(fd, readbuf.buf, BUFSIZE);//从文件中读数据
 		printf("read %d bytes.\n", sizeread);
 		message = g_new0(char, 100);
 		sprintf(message, "read %d bytes.\n", sizeread);
@@ -271,8 +261,8 @@ void *read_thread(void *data)
 		if (readbuf.size <= 0) //如果读到最后一块数据跳出循环
 			break;
 		buf_index = buf_index % BUFNUM; //缓存区索引，根据缓存区数量循环
-		sem_wait(empty);
-		memcpy((void *)&bufs[buf_index], (void *)&readbuf, sizeof(BUFFER)); //向缓存区存数据
+		sem_wait(empty);//向缓存区存数据
+		memcpy((void *)&bufs[buf_index], (void *)&readbuf, sizeof(BUFFER)); 
 		sem_post(full);
 		bytecounts += sizeread;
 		double *d_read = g_new0(double, 1);
@@ -300,8 +290,7 @@ void *write_thread(void *data)
 	message = g_new0(char, 100);
 	sprintf(message, "write process started.\n");
 	gdk_threads_add_timeout(0, updatewrite, message);
-	if (-1 == (fd = open(d_name, O_CREAT | O_RDWR, S_IRWXU | S_IRWXO | S_IRWXG)))
-	{
+	if (-1 == (fd = open(d_name, O_CREAT | O_RDWR, S_IRWXU | S_IRWXO | S_IRWXG))){
 		printf("failed to create dest_file:%s\n", strerror(errno));
 		exit(-1);
 	}
@@ -309,15 +298,13 @@ void *write_thread(void *data)
 		printf("savefilename : %s\n", d_name);
 	int buf_index = 0;
 	BUFFER writebuf;
-	while (1)
-	{
-		sleep(1);
+	while (1){
+		sleep(1);						//为观察程序执行过程而设置每秒拷贝一段数据
 		buf_index = buf_index % BUFNUM; //缓存区索引，根据缓存区数量循环
-		sem_wait(full);
-		memcpy((void *)&writebuf, (void *)&bufs[buf_index], sizeof(BUFFER)); //从缓存区取数据
+		sem_wait(full); //从缓存区取数据
+		memcpy((void *)&writebuf, (void *)&bufs[buf_index], sizeof(BUFFER)); 
 		sem_post(empty);
 		int sizewrited = write(fd, writebuf.buf, writebuf.size); //向文件中写数据
-
 		printf("writed %d bytes.\n", sizewrited);
 		message = g_new0(char, 100);
 		sprintf(message, "writed %d bytes.\n", sizewrited);
