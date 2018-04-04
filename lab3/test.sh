@@ -1,7 +1,7 @@
 #2.编译测试程序
 gcc hualongtest.c -o hualongtest
 #3.安装模块
-sudo insmod hualong.ko
+sudo insmod mymodule.ko
 #4.查看安装日志
 dmesg -T -l 1
 #5.查看是否成功加载模块

@@ -1,5 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-MODULE_NAME = hualong
+MODULE_NAME = mymodule
 $(MODULE_NAME)-objs := hualong.o
 obj-m := $(MODULE_NAME).o
 else

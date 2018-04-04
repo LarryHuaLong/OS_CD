@@ -321,6 +321,9 @@ void *write_thread(void *data)
 	}
 	close(fd);
 	printf("write completed.\n");
+	double *d_write = g_new0(double, 1);
+	*d_write = *pfilesize;
+	gdk_threads_add_timeout(0, set_write_bar, (gpointer)d_write);
 	message = g_new0(char, 100);
 	sprintf(message, "write completed.\n");
 	gdk_threads_add_timeout(0, updatewrite, message);
