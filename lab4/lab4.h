@@ -42,13 +42,13 @@ enum
 
 typedef struct PIDINFO
 {
-	int pid;	   	//进程号
-	char comm[20]; 	//程序名
-	char state;		//程序状态
-	int ppid;	  	//父进程id
-	int priority;  	//动态优先级
-	int nice;	  	//静态优先级
-	int size;	  	//占用内存大小
+	int pid;	   //进程号
+	char comm[20]; //程序名
+	char state;	//程序状态
+	int ppid;	  //父进程id
+	int priority;  //动态优先级
+	int nice;	  //静态优先级
+	int size;	  //占用内存大小
 } PIDINFO;
 
 typedef struct PROCESS_list

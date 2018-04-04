@@ -156,7 +156,6 @@ int main(int argc, char *argv[])
 	g_object_unref(G_OBJECT(builder)); //释放GtkBuilder对象
 	return 0;
 }
-
 void *collect_rates(void *data)
 {
 	int total0 = 0;
@@ -191,7 +190,6 @@ void *collect_rates(void *data)
 	}
 	return NULL;
 }
-
 void *collect_pids(void *data)
 {
 	int pids[1000];
@@ -219,7 +217,6 @@ void *collect_pids(void *data)
 	}
 	return NULL;
 }
-
 void *newthread(void *data)
 {
 	char *buffer = data;
@@ -228,7 +225,6 @@ void *newthread(void *data)
 	g_free(buffer);
 	return NULL;
 }
-
 void new_thread(GtkWidget *widget, gpointer data)
 {
 	printf("new_thread is called\n");
@@ -239,7 +235,6 @@ void new_thread(GtkWidget *widget, gpointer data)
 	g_thread_new("new_thread", &newthread, buffer);
 	return;
 }
-
 void search_pid(GtkWidget *widget, gpointer data)
 {
 	printf("search_pid is called\n");
@@ -258,7 +253,6 @@ void search_pid(GtkWidget *widget, gpointer data)
 	show_detail(NULL, &pidinfo);
 	return;
 }
-
 void confirm_shutdown(GtkWidget *widget, gpointer data)
 {
 	printf("confirm_shutdown is called\n");
@@ -276,7 +270,6 @@ void confirm_shutdown(GtkWidget *widget, gpointer data)
 	gtk_widget_destroy(dialog);
 	return;
 }
-
 void confirm_kill(GtkWidget *widget, gpointer data)
 {
 	printf("confirm_kill is called\n");
@@ -303,7 +296,6 @@ void confirm_kill(GtkWidget *widget, gpointer data)
 	gtk_widget_destroy(dialog);
 	return;
 }
-
 void show_detail(GtkWidget *widget, gpointer data)
 {
 	printf("show_detail is called\n");
@@ -324,7 +316,6 @@ void show_detail(GtkWidget *widget, gpointer data)
 	gtk_label_set_text((GtkLabel *)p_memsize, buf);
 	return;
 }
-
 gboolean update_cpu_plots(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	guint cpu_width, cpu_height;
@@ -395,7 +386,6 @@ gboolean update_lables(gpointer pdata)
 	g_free(ulables);
 	return FALSE;
 }
-
 gboolean update_list(gpointer pdata)
 {
 	PROCESS_list *pro_list = pdata;
