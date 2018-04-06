@@ -1,1 +1,0 @@
-cmd_/media/hualong/E/OS_CD/lab3/mymodule.ko := ccache ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /media/hualong/E/OS_CD/lab3/mymodule.ko /media/hualong/E/OS_CD/lab3/mymodule.o /media/hualong/E/OS_CD/lab3/mymodule.mod.o ;  true
