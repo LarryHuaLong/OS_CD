@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-
+//
 int filecopy(char *sname, char *dname)
 {
 	int fd_s;

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <gtk/gtk.h>
-
+///
 #define BUFNUM 5	//缓存区数量
 #define BUFSIZE 100 //缓存区大小
 void openfilechoosedialog(GtkWidget *widget, gpointer data);
